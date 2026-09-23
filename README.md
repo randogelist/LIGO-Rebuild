@@ -1,3 +1,5 @@
+3D visual representation here:https://youtu.be/kHWPUc7C8C4
+
 # BKQR GR — GW150914 Visualizer and Reduced Numerical Model
 
 A Windows-native reduced general-relativistic model for a GW150914-like binary black-hole merger. The project combines a DX12 optical/lensing visualizer with a 3PN/3.5PN inspiral model, an NR-calibrated remnant transition, Kerr ringdown, and an induced far-observer gravitational-wave signal generated from the same evolving binary state.
