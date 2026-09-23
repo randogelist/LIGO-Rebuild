@@ -1,0 +1,10 @@
+quantity,our_reduced_model_L1_diagnostic,LIGO_GWOSC_GWTC2p1_source,notes
+M_total_Msun,70.1256,64.5,"ours detector-frame diagnostic; LIGO value source-frame"
+chirp_mass_Msun,29.4369,27.9,"ours detector-frame diagnostic; LIGO value source-frame"
+m1_Msun,43.5540,34.6,"our component split is not robust; frames differ"
+m2_Msun,26.5716,30.0,"our component split is not robust; frames differ"
+eta,0.235338,,"derived from our L1-only sub-fit"
+final_mass_Msun,67.1003,61.5,"ours detector-frame diagnostic; LIGO value source-frame"
+final_spin,0.653489,0.68,"dimensionless"
+f220_Hz,248.644,~250,"our predicted Kerr 220 scale; LIGO factsheet approximately 250 Hz"
+tau220_ms,3.978,~4,"our predicted Kerr 220 damping time; LIGO factsheet approximately 4 ms"

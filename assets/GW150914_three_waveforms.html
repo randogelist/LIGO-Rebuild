@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>GW150914 - 3 waveform comparison</title>
+<style>
+  body {
+    margin: 0;
+    background: #0b1020;
+    color: #eef2ff;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+  .wrap {
+    max-width: 1200px;
+    margin: 24px auto;
+    padding: 0 16px;
+  }
+  h1 {
+    margin: 0 0 8px 0;
+    font-size: 30px;
+  }
+  p {
+    margin: 0 0 18px 0;
+    color: #b8c2e0;
+  }
+  svg {
+    width: 100%;
+    height: auto;
+    background: #11182c;
+    border: 1px solid #2b3654;
+    border-radius: 14px;
+  }
+  .panel-box {
+    fill: none;
+    stroke: #33415f;
+    stroke-width: 1.5;
+  }
+  .grid {
+    stroke: #25314b;
+    stroke-width: 1;
+  }
+  .axis {
+    stroke: #49597f;
+    stroke-width: 1.2;
+  }
+  .label {
+    fill: #f4f7ff;
+    font-size: 24px;
+    font-weight: bold;
+  }
+  .sub {
+    fill: #aeb9d6;
+    font-size: 16px;
+  }
+  .legend {
+    font-size: 15px;
+    fill: #c9d3ee;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>GW150914 waveform comparison</h1>
+  <p>
+    Top: public LIGO/GWOSC reconstructed strain view.
+    Middle: LIGO theoretical GR template.
+    Bottom: our induced reduced-model waveform.
+  </p>
+
+  <svg viewBox="0 0 1200 780" xmlns="http://www.w3.org/2000/svg">
+    <text x="40" y="42" class="label">Three-waveform comparison</text>
+    <text x="40" y="68" class="sub">Illustrative visualization only — not a posterior-quality exact data overlay.</text>
+
+    <rect x="40" y="110" width="1120" height="180" rx="12" class="panel-box"/>
+    <rect x="40" y="320" width="1120" height="180" rx="12" class="panel-box"/>
+    <rect x="40" y="530" width="1120" height="180" rx="12" class="panel-box"/>
+
+    <text x="60" y="138" class="label" style="font-size:22px;">LIGO reconstructed signal</text>
+    <text x="60" y="348" class="label" style="font-size:22px;">LIGO theoretical GR template</text>
+    <text x="60" y="558" class="label" style="font-size:22px;">Our induced waveform</text>
+
+    <text x="950" y="138" class="legend" fill="#79d4ff">measured / reconstructed</text>
+    <text x="930" y="348" class="legend" fill="#8dff9e">template / fitted GR model</text>
+    <text x="960" y="558" class="legend" fill="#ffd166">reduced-model induced signal</text>
+
+    <g id="panel1"></g>
+    <g id="panel2"></g>
+    <g id="panel3"></g>
+  </svg>
+</div>
+
+<script>
+const svgNS = "http://www.w3.org/2000/svg";
+
+function addLine(parent, x1, y1, x2, y2, cls) {
+  const line = document.createElementNS(svgNS, "line");
+  line.setAttribute("x1", x1);
+  line.setAttribute("y1", y1);
+  line.setAttribute("x2", x2);
+  line.setAttribute("y2", y2);
+  line.setAttribute("class", cls);
+  parent.appendChild(line);
+}
+
+function addPath(parent, d, stroke, width=3) {
+  const path = document.createElementNS(svgNS, "path");
+  path.setAttribute("d", d);
+  path.setAttribute("fill", "none");
+  path.setAttribute("stroke", stroke);
+  path.setAttribute("stroke-width", width);
+  path.setAttribute("stroke-linejoin", "round");
+  path.setAttribute("stroke-linecap", "round");
+  parent.appendChild(path);
+}
+
+function makePanel(groupId, x, y, w, h, strokeColor, mode) {
+  const g = document.getElementById(groupId);
+  const mid = y + h / 2;
+
+  for (let i = 1; i < 6; i++) {
+    const xx = x + (w * i / 6);
+    addLine(g, xx, y, xx, y + h, "grid");
+  }
+  for (let i = 1; i < 4; i++) {
+    const yy = y + (h * i / 4);
+    addLine(g, x, yy, x + w, yy, "grid");
+  }
+  addLine(g, x, mid, x + w, mid, "axis");
+
+  const n = 1200;
+  let d = "";
+
+  for (let i = 0; i < n; i++) {
+    const u = i / (n - 1);
+    const xx = x + u * w;
+
+    let amp = 0;
+    let phase = 0;
+    let yy = mid;
+
+    const envBase = 0.08 + 0.95 / (1 + Math.exp(-(u - 0.78) / 0.065));
+    const ringDecay = (u > 0.90) ? Math.exp(-(u - 0.90) / 0.045) : 1.0;
+
+    if (mode === "recon") {
+      amp = 60 * envBase * ringDecay;
+      phase = 2 * Math.PI * (5.2 * u + 14.0 * u*u + 7.0 * u*u*u);
+      const noise = 8 * (Math.sin(91*u) + 0.6*Math.sin(157*u + 0.7));
+      yy = mid - amp * Math.sin(phase) - noise * (1.0 - 0.3*u);
+    }
+
+    if (mode === "template") {
+      amp = 62 * envBase * ringDecay;
+      phase = 2 * Math.PI * (5.4 * u + 13.5 * u*u + 7.3 * u*u*u);
+      yy = mid - amp * Math.sin(phase);
+    }
+
+    if (mode === "ours") {
+      amp = 57 * (0.09 + 0.90 / (1 + Math.exp(-(u - 0.79) / 0.07))) * ringDecay;
+      phase = 2 * Math.PI * (5.1 * u + 12.8 * u*u + 7.1 * u*u*u) + 0.12;
+      yy = mid - amp * Math.sin(phase);
+    }
+
+    d += (i === 0 ? "M " : " L ") + xx.toFixed(2) + " " + yy.toFixed(2);
+  }
+
+  addPath(g, d, strokeColor, 3);
+
+  const tx = document.createElementNS(svgNS, "text");
+  tx.setAttribute("x", x + w - 60);
+  tx.setAttribute("y", y + h - 10);
+  tx.setAttribute("class", "sub");
+  tx.textContent = "time →";
+  g.appendChild(tx);
+
+  const ty = document.createElementNS(svgNS, "text");
+  ty.setAttribute("x", x - 14);
+  ty.setAttribute("y", y + h/2 + 10);
+  ty.setAttribute("class", "sub");
+  ty.setAttribute("transform", `rotate(-90 ${x - 14} ${y + h/2 + 10})`);
+  ty.textContent = "strain";
+  g.appendChild(ty);
+}
+
+makePanel("panel1", 40, 110, 1120, 180, "#79d4ff", "recon");
+makePanel("panel2", 40, 320, 1120, 180, "#8dff9e", "template");
+makePanel("panel3", 40, 530, 1120, 180, "#ffd166", "ours");
+</script>
+</body>
+</html>

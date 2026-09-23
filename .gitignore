@@ -1,0 +1,8 @@
+*.exe
+*.obj
+*.pdb
+*.ilk
+*.log
+*.zip
+A_VISUALIZER_NUMERICAL_ENGINE/reference_data/H1_reconstructions.txt
+A_VISUALIZER_NUMERICAL_ENGINE/reference_data/L1_reconstructions.txt

@@ -1,0 +1,71 @@
+BKQR GR OPTICAL DYNAMICS v1.6.4.4 -- FORMAL MODEL SUMMARY
+
+GEOMETRIZED UNITS
+  G=c=1.
+  M=m1+m2, mu=m1*m2/M, eta=mu/M.
+  Lorb=Jtot-S1z-S2z, sigma=sign(Lorb).
+  x=(M |Omega|)^(2/3).
+
+3PN CIRCULAR BINDING ENERGY
+  E(x)=-(M eta x/2) [1+e1 x+e2 x^2+e3 x^3]
+  e1=-3/4-eta/12
+  e2=-27/8+19 eta/8-eta^2/24
+  e3=-675/64 +(34445/576-205 pi^2/96)eta
+      -155 eta^2/96 -35 eta^3/5184.
+
+3PN CIRCULAR ANGULAR MOMENTUM
+Using dE=Omega dJ on the circular sequence,
+  Jorb(x)=eta M^2 x^(-1/2)
+    [1-2 e1 x-e2 x^2-(4/5)e3 x^3].
+The code solves |Lorb|=Jorb(x0) by bisection on the weak-field branch.
+Thus Jtot is no longer converted to r0 with a Newtonian J^2 rule.
+  r0=M/x0,
+  Omega0=sigma x0^(3/2)/M.
+
+3.5PN NONSPINNING GW LUMINOSITY
+  F(x)=(32/5) eta^2 x^5 times the standard point-mass 3.5PN circular correction
+  through x^(7/2), including tail/log terms.
+
+ENERGY / ANGULAR-MOMENTUM BALANCE
+  dx/dt = -F(x)/(dE/dx),
+  dphi/dt = sigma x^(3/2)/M,
+  dErad/dt = F(x),
+  dJrad/dt = sigma F(x)/|Omega|.
+The inspiral is integrated with adaptive RK4 substeps. The finite-separation ledger is
+  Madm,0 = M + E(x0),
+  Msystem(t) + Erad(t) = Madm,0,
+  Jsystem(t) + Jrad(t) = Jtot.
+
+STRONG-FIELD SWITCH
+The PN branch ends before dE/dx=0:
+  xMECO = positive weak-field root of dE/dx=0,
+  xtr = min(0.92 xMECO, 1/rSafetyFactor),
+  rtr=M/xtr.
+Input J is rejected if it would require a circular x0>xtr.
+
+NR-CALIBRATED REMNANT
+The final radiated fraction and dimensionless aligned final spin are the
+Jimenez-Forteza et al. (2017) fits as implemented by LALSuite/PhenomX.
+The finite-separation energy budget additionally enforces Mfinal<Madm,0.
+The merger closure moves Msystem and Jsystem monotonically toward the fitted
+remnant values without violating either ledger.
+
+RINGDOWN SCALE
+For remnant dimensionless spin chi,
+  Mfinal*omega_220 = 1.5251 - 1.1568 (1-|chi|)^0.1292,
+  Q_220 = 0.7000 + 1.4187 (1-|chi|)^(-0.4990),
+  tau_220 = 2 Q_220 / omega_220.
+This sets the characteristic post-merger timescale/frequency.
+
+CLAIM BOUNDARY
+This is a PN/NR-calibrated reduced-order evolution, not a BSSN, Z4c, or
+generalized-harmonic solution of the Einstein PDEs. The merger separation envelope
+is a smooth closure constrained by energy/J and NR remnant data; it is not itself a
+field-equation-derived coordinate trajectory. The current optical remnant is
+Schwarzschild even when the tracked remnant spin is nonzero.
+
+REFERENCES USED FOR THE NUMERICAL MODEL
+- Blanchet, Faye, Iyer, Joguet, Phys. Rev. D 65, 061501 (2002), erratum D 71, 129902; arXiv:gr-qc/0105099.
+- Jimenez-Forteza et al., Phys. Rev. D 95, 064024 (2017); arXiv:1611.00332.
+- LALSuite LALSimulation IMRPhenomX final-state implementation.
+- Dominant Kerr QNM fitting formula with coefficients f1=1.5251, f2=-1.1568, f3=0.1292, q1=0.7000, q2=1.4187, q3=-0.4990.

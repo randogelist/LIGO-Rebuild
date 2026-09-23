@@ -1,0 +1,20 @@
+BKQR GR OPTICAL DYNAMICS v1.6.6.2 -- VIEW CLOCK
+
+Default wall-time mapping:
+  dt_sim/dt_wall = 2*pi*f_view / |Omega_characteristic(t)|.
+Default f_view=1.00 Hz.
+
+INSPIRAL:
+  Omega_characteristic = orbital angular frequency.
+  The display therefore shows approximately one orbital revolution per wall second.
+
+MERGER/RINGDOWN:
+  The characteristic phase rate smoothly approaches omega_220/2, because the dominant m=2 GW mode oscillates near twice the orbital phase rate.
+  Once the binary markers have disappeared, this is a ringdown phase clock rather than a literal remnant orbit.
+
+This is only a time reparameterization for visualization. It does not change the simulated E(x), F(x), r(x), Erad, Jrad, remnant fit, or conservation ledgers.
+
+Environment:
+  BKQR_VIEW_ORBIT_HZ=1.0
+  BKQR_PHASE_NORMALIZED=1
+  BKQR_TIME_RATE=1.0    (used when normalization is disabled)

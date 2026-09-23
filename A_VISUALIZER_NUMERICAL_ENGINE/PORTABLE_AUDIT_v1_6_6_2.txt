@@ -1,0 +1,8 @@
+BKQR GR OPTICAL DYNAMICS DX12 v1.6.6.2
+
+MSVC FIX:
+- waveform panel RECT width/height are explicitly converted from Win32 LONG to int before std::max.
+- fixes C2672/C2737 at main.cpp line 203 under MSVC 14.51.
+- no physics, optical, waveform, ABI, or preset semantics changed from v1.6.6.1.
+
+STATIC_SCAN_RECT_STD_MAX=PASS

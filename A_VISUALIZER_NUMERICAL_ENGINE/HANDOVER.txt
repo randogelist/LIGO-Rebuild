@@ -1,0 +1,199 @@
+BKQR_GR_OPTICAL_DYNAMICS_DX12_v1_6_6_2 HANDOVER
+
+BASELINE
+--------
+Built from the stable v1.4.0.4 DX12 child-window / phase-normalized-view-clock branch.
+The v1.4.0.4 crash-hardening remains in place.
+
+WHAT CHANGED
+------------
+1. Deleted the artificial FLOOR_ORBIT_HOLD merger substitute.
+2. Replaced leading quadrupole-only inspiral with a stateful 3PN-energy / 3.5PN-flux TaylorT1-style balance integrator.
+3. Replaced the Newtonian J->r0 map with the gauge-invariant 3PN circular angular-momentum relation and deterministic weak-branch inversion.
+4. Added explicit E_rad, J_rad, current system mass/J, GW power/J flux, and balance diagnostics.
+5. Added NR-calibrated final mass/final spin and dominant Kerr QNM timescale.
+6. Added merger/ringdown/remnant stages. The finite-separation ADM and total-J ledgers are preserved by construction.
+7. Changed shader protocol to 0x00016000 while preserving the 256-byte constant-buffer ABI.
+8. Optical shader now blends moving two-puncture optics into one central remnant and adds non-dynamical GW-power rings to the orbital inset.
+9. Default equal-mass J is now 0.9944154929906234, the 3PN circular-J value giving r0=12 M.
+10. Added portable energy-balance and merger/remnant regression tests.
+
+DEFAULT PORTABLE AUDIT RESULT
+-----------------------------
+Default m1=m2=0.5, spins zero:
+  r0 = 12 M
+  PN switch r ~= 4.263351286 M
+  finite-separation initial ADM ~= 0.9904596655 M_rest
+  NR-fit final mass ~= 0.9515839429 M_rest
+  NR-fit final dimensionless spin ~= 0.6863698794
+Portable tests show energy and angular-momentum ledger closure at machine precision and PN balance residual ~1.7e-10 for the default integration.
+
+CLAIM BOUNDARY / NEXT PHYSICS TARGETS
+-------------------------------------
+This is not full numerical relativity. Strong-field merger geometry is a conservation- and NR-fit-constrained closure, not a solved 3+1 Einstein metric.
+For the next fidelity tier:
+  A. replace nonspinning PN flux with aligned-spin PN/EOB conservative + dissipative dynamics;
+  B. replace Schwarzschild remnant optical propagation with Kerr null-geodesic / frame-dragging propagation;
+  C. for actual field-equation convergence through merger, feed the renderer from a BSSN/Z4c/generalized-harmonic NR evolution or an NR surrogate waveform/metric data product.
+
+
+SOURCE / DETECTOR EXTENSION
+---------------------------
+11. Added two explicit source-to-detector optical modes:
+    * point source -> detector screen
+    * cylindrical beam -> detector screen
+12. Preserved the 256-byte packet ABI by multiplexing a few packet fields by render mode rather than enlarging the constant buffer.
+13. Added backward tracing to a source plane in the HLSL shader (`trace_to_source_plane`) and a dedicated detector shading path (`shade_detector_sample`).
+14. Added control-panel sliders for detector distance, source distance, detector half-height, point-source size, beam radius, and beam softness.
+15. Added keyboard shortcuts 4/5 for the new detector modes.
+
+Interpretation: the new detector modes are not a camera looking at the sky. The output image is the detector itself, so bright/dark structures directly show how the black holes lens a source or a beam before it reaches the screen.
+
+
+GLOBAL RESTART EXTENSION
+------------------------
+16. Added a fixed GLOBAL RESTART pushbutton to the control-panel header.
+17. Added F5 as an exact keyboard alias of the same global_restart(...) function.
+18. The global restart restores CameraState, SimulationState, BinaryVisualState, and QualityState atomically to package defaults.
+19. Static stability audit now checks the button, the all-state callback binding, and F5 alias.
+
+
+MIRRORED DETECTOR STARTUP
+-------------------------
+16. Removed the background star field and replaced the background with a clean black field.
+17. Startup default render mode is now the point-source detector mode rather than the sky camera.
+18. Detector modes are now camera-anchored: the detector plane is centered at the camera position and oriented by the camera right/up basis.
+19. The emitting source is mirrored through the binary barycenter, i.e. x_source=-x_camera, so the source lies at the same distance on the opposite side along the continued camera-center line.
+20. Added a faint 2D centerpoint/crosshair at the detector origin to mark the barycentric optical axis.
+21. Removed the user-facing detector-distance/source-distance sliders because detector geometry is now derived from the camera position in detector modes.
+
+
+LEFT CAMERA BAR
+---------------
+22. Split the UI into two custom slider panels.
+23. Added a dedicated left camera bar containing radius, azimuth, inclination, field-of-view, and exposure controls only.
+24. Kept the main right control deck for simulation, physical inputs, optics, detector settings, and ray quality.
+25. The render surface now sits between the left camera bar and the right main bar.
+26. Both panels refresh live; the existing global restart button remains on the right control deck.
+
+
+GLOBAL RESTART ALWAYS PAUSED
+----------------------------
+27. Global restart now forces `sim.paused=true` after restoring defaults.
+28. The button and F5 still share the same restart function, so both land at t=0 in PAUSED state.
+29. Initial application startup remains unchanged; only global restart forces pause.
+
+
+CAMERA SLIDER REPAIR
+--------------------
+27. Camera sliders now hit-test the actual track/knob instead of treating the entire row as a slider.
+28. Knob drags preserve the grab offset, preventing value jumps when the knob is grabbed off-center.
+29. Hover highlighting follows the real interactive slider region.
+30. Mirrored detector mode now derives screen aperture from camera radius and camera FOV, with the detector-size control acting as a scale factor. This makes Radius, Azimuth, Inclination, FOV, and Exposure all active in the startup detector view.
+
+
+CENTER-LOCKED CAMERA
+--------------------
+27. Simplified the left camera bar to the requested center-locked spherical coordinates only: R, theta, phi.
+28. Camera framing remains center-locked by construction; forward direction is always toward the barycenter.
+29. Moved field-of-view and exposure controls to the right control deck under VIEW / DISPLAY.
+30. Updated left-panel labels from natural-language names to the requested symbolic coordinates.
+
+
+NATIVE CAMERA KNOBS
+-------------------
+31. Replaced the left custom-painted R/theta/phi sliders with native Win32 TRACKBAR controls.
+32. Native trackbar thumbs are used specifically to eliminate the missing-knob rendering issue seen on the user machine.
+33. R, theta and phi update CameraState directly from WM_HSCROLL/TBM_GETPOS.
+34. Native knob positions synchronize from CameraState during panel refresh, including keyboard camera motion and global restart.
+35. Center lock is unchanged: camera forward = normalize(-camera position).
+
+
+MATCHED CAMERA SLIDER DECK
+--------------------------
+31. Removed the separate CameraKnobBar/native-trackbar path.
+32. Left camera controls now use the exact same ControlPanel class as the right-hand controls.
+33. Left and right panel widths are both 360 px.
+34. R/theta/phi inherit the same custom knob, hover, drag-offset, hit-test, value-label, and reset behavior as every right-deck slider.
+35. Center-lock remains enforced by camera_frame(): forward = normalize(-position).
+
+
+WINDOWS COMPILE FIX
+-------------------
+Removed the stale InitCommonControlsEx/ICC_BAR_CLASSES initialization left over from the temporary native-trackbar experiment. The v1.6.3.5 camera UI already used the shared custom ControlPanel implementation, so the common-controls initialization was dead code and caused MSVC compilation to fail when commctrl.h was not included. v1.6.6.2 has no common-controls trackbar dependency.
+
+
+GLOBAL PLAY BUTTON
+------------------
+31. Added GLOBAL PLAY beside GLOBAL RESTART on the right control deck.
+32. GLOBAL PLAY only clears sim.paused and therefore resumes the current state without resetting any model or camera state.
+33. GLOBAL RESTART retains the frozen baseline behavior: full state reset to t=0 with paused=true.
+34. Added static regression markers for button presence, side-by-side layout, and resume-without-reset semantics.
+
+
+MIRRORED SOURCE SPHERE
+----------------------
+31. Added a toggleable luminous sphere at the mirrored source point x_source=-x_camera.
+32. Added control-deck entries `Show mirrored source sphere` and `Source sphere radius`.
+33. Detector modes now illuminate from the finite sphere when enabled; otherwise they retain the older point/cylinder source profiles.
+34. Sky mode now also renders the mirrored source sphere directly, allowing lensing to be observed without the removed star background.
+35. Reused existing 256-byte packet ABI by multiplexing Reserved0.z and Reserved0.w for source-sphere toggle/radius.
+
+
+GLOBAL RESTART PRESERVES CURRENT PARAMETERS
+-------------------------------------------
+36. Changed GLOBAL RESTART from a factory-default reset to a current-parameter rewind.
+37. Restart now preserves camera, physical inputs, optical/source controls, ray-quality controls, and view-clock settings.
+38. Restart resets only `bin.dyn` and `sim.time`, and forces `sim.paused=true`.
+39. Added static regression checks `GLOBAL_RESTART_REWINDS_CURRENT_PARAMETERS` and `GLOBAL_RESTART_DOES_NOT_FACTORY_RESET_CAMERA_OR_QUALITY`.
+
+
+ON / OFF TOGGLE WIDGETS
+-----------------------
+36. Added a dedicated ToggleSpec/add_toggle path to the shared ControlPanel renderer.
+37. Converted all true boolean UI values from 0/1 sliders to visual ON/OFF switches: Paused, Time normalization, Radiation reaction, Orbital-plane inset, mirrored source sphere.
+38. Added explicit Time normalization switch semantics: OFF uses the Physical time rate directly and bypasses phase-normalized playback.
+39. Multi-state controls such as Render mode remain sliders.
+40. Current toggle states are preserved by GLOBAL RESTART because restart now rewinds only dynamics/time.
+
+
+MSVC TOGGLE RECT TYPE FIX
+--------------------------
+Fixed the Windows-only C++ template ambiguity in toggle text layout by making the RECT/std::max coordinate type explicitly LONG. Added `MSVC_TOGGLE_RECT_LONG_TYPE_SAFE` static regression coverage. No runtime semantics changed.
+
+
+DIRECT INITIAL SEPARATION INPUT
+-------------------------------
+36. Added `Initial separation r0 / M` to PHYSICAL INITIAL CONDITIONS.
+37. It is the initial center-to-center object distance, normalized by total mass M.
+38. Setting r0/M deterministically rebinds J through the same 3PN circular angular-momentum relation used by the derivation, preserving orbital orientation.
+39. J and r0/M therefore remain mutually consistent views of one quasicircular initial condition.
+40. Added regression targets `DIRECT_INITIAL_SEPARATION_INPUT`, `INITIAL_SEPARATION_SLIDER_PRESENT`, and `INITIAL_SEPARATION_REBINDS_3PN_J`.
+
+
+MOVING OBJECT RADII
+-------------------
+36. Added Object 1 radius and Object 2 radius controls under PHYSICAL INITIAL CONDITIONS.
+37. Each radius is independently propagated to the shader and used as a moving pre-merger absorbing/capture surface.
+38. The orbital inset object sizes now scale with these user-selected radii.
+39. Radius controls are intentionally optical/absorbing parameters and do not modify m1/m2, PN energy/flux, or orbital dynamics.
+40. Defaults are 0.25 M for each equal-mass object.
+
+
+TIME-EVOLVING OBJECT RADII
+--------------------------
+36. Removed the manual Object 1/Object 2 radius sliders.
+37. Added derived time-dependent individual optical capture radii tied to the instantaneous/retarded separation and merger blend.
+38. Ray capture evaluates those radii from the retarded binary state along the ray.
+39. The orbital inset now sizes the moving objects from the evolving radii and transitions to a remnant radius derived from the evolving system mass.
+40. Console/title telemetry now reports OBJECT1_RADIUS_T, OBJECT2_RADIUS_T, and REMNANT_RADIUS_T.
+41. Claim boundary: these are effective optical-capture radii in the reduced two-puncture ansatz, not exact NR apparent-horizon radii.
+
+
+OBSERVER WAVEFORM EXTENSION
+---------------------------
+29. Upgraded package identity to v1.6.6.2.
+30. Added a dedicated waveform child panel below the DX12 optics surface.
+31. The panel plots h+, hx, and a projected distant-observer strain h_obs using the same inspiral / merger / ringdown state that drives the renderer.
+32. Added live controls for observer inclination, polarization angle, observer distance, and waveform gain.
+33. Waveform history rewinds on restart and on parameter rewinds through the existing reset paths.

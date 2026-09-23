@@ -1,0 +1,14 @@
+BKQR GR OPTICAL DYNAMICS v1.4.0.4 stability patch
+
+ROOT CAUSE FIXED:
+- Physical-input slider callbacks in v1.4.0.x captured local reset_phys by reference.
+- configure_control_panel returned, leaving a dangling std::function closure reference.
+- Touching M1/M2/J/spin/phase/RR/min-r could therefore raise 0xC0000005.
+
+FIXES:
+- Removed local reset_phys closure from all stored callbacks.
+- Physical setters capture only long-lived BinaryVisualState/SimulationState by reference.
+- Transactional input commit validates derive(candidate) before mutating live state.
+- Win32 control callback exceptions are contained inside the WndProc boundary.
+- Default BKQR_SAFE_GPU_SERIAL=1 waits each submitted frame fence before reuse.
+- Lens shader and binary dynamics formulas unchanged.
